@@ -1,6 +1,6 @@
 const knownUrls = require('./urls.config.json');
 
-let sentenceSyntax = /(?:say the |tell me the |(?:what is|what's) the )(?:([^"]*) )?url(?: for ([^"]*))?/;
+let sentenceSyntax = /(?:(?:list|say|show(?: me| us)?|tell (?:me|us)|what (?:are|is)|what're|what's)) (?:all )?the (?:([^"]*) )?url(?:s)?(?: for ([^"]*))?/i;
 //TODO tweak regex to guarantee either group 1 or 2
 
 module.exports.PluginName = 'URL Repository';
@@ -15,19 +15,22 @@ module.exports.CanHandleMessage = function(messageText){
 
 module.exports.HandleMessage = function(event, sendMsg){
     let requestedUrlName = '';
-    let urlFound = '';
     let match = sentenceSyntax.exec(event.text.toLowerCase());
-    if(!!match[1]) requestedUrlName = match[1];
-    if(!!match[2]) requestedUrlName = match[2];
+    if(!!match[1]) requestedUrlName = match[1].toLowerCase();
+    if(!!match[2]) requestedUrlName = match[2].toLowerCase();
 
-    knownUrls.forEach(function (knownUrl){
-        knownUrl.names.forEach(function(urlAlias){
-            if (urlAlias === requestedUrlName){
-                urlFound = knownUrl.url;
-                return;
-            }
-        });
-    });
+    let matchingUrls = knownUrls.filter(function(a){return a.tags.includes(requestedUrlName)});
+
+    if(matchingUrls < 1){
+        sendMsg('Sorry, I am not familiar with any URLs matching that description.', event.channel);
+        return;
+    }
     
-    sendMsg(!urlFound? 'Sorry, I am not familiar with that URL.' : urlFound, event.channel);
+    if(matchingUrls.length === 1){
+        sendMsg(`<${matchingUrls[0].url}|${matchingUrls[0].name}>`, event.channel);
+        return;
+    }
+    
+    let msg = matchingUrls.map(function(a){return `• <${a.url}|${a.name}>`}).join('\n');
+    sendMsg(msg, event.channel);
 };
