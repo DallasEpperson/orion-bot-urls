@@ -20,14 +20,16 @@ The collection of URLs is stored in urls.config.json like so.
 [
     {
         "url": "https://www.example.com/Login",
-        "names": [
+        "name": "Example Production Website",
+        "tags": [
             "production example",
             "example production"
         ]
     },
     {
         "url": "https://somethingelse.com",
-        "names": [
+        "name": "Derp Website",
+        "tags": [
             "derpsite",
             "derp site",
             "production derp site"
